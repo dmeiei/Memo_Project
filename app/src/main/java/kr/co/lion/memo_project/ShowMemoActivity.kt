@@ -7,6 +7,9 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import kr.co.lion.memo_project.databinding.ActivityShowMemoBinding
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ShowMemoActivity : AppCompatActivity() {
     lateinit var activityShowMemoBinding: ActivityShowMemoBinding
@@ -67,44 +70,34 @@ class ShowMemoActivity : AppCompatActivity() {
 
     // 툴바 설정
     fun setToolbar(){
-        activityShowMemoBinding.apply {
-            toolbarShowMemo.apply {
-                // 타이틀
-                title = "메모 보기"
-                // Back
-                setNavigationIcon(R.drawable.arrow_back_24px)
-                setNavigationOnClickListener {
-                    // 현재 화면 종료 및 수정 결과 전달
-                    setResult(RESULT_OK, Intent().putExtra("updatedMemoData", memoData))
-                    finish()
-                }
-                //menu
-                inflateMenu(R.menu.menu_show_menu)
-                setOnMenuItemClickListener {
-                    when(it.itemId){
-
-                        // 수정 메뉴 선택 시 EditMemoActivity 실행
-                        R.id.menu_edit ->{
-                            val intent = Intent(this@ShowMemoActivity, EditMemoActivity::class.java)
-                            intent.putExtra("memoData", memoData)
-                            editActivityLauncher.launch(intent)
-
-                        }
-
-                        // 삭제 메뉴 선택 시 현재 메모 삭제
-                        R.id.menu_delete ->{
-                            // memoIndex가 -1이 아니면 (선택한 메모가 있다면) 아래 동작 수행
-                            if(memoIndex != -1){
-                                val resultIntent = Intent()
-                                // "deleteMemoData" 에 memoIndex 값을 담아서 결과 Intent에 추가
-                                resultIntent.putExtra("deleteMemoData", memoIndex)
-                                setResult(RESULT_OK, resultIntent)
-                                finish()
-                            }
-                        }
+        activityShowMemoBinding.toolbarShowMemo.apply {
+            // 타이틀
+            title = "메모 보기"
+            // Back
+            setNavigationIcon(R.drawable.arrow_back_24px)
+            setNavigationOnClickListener {
+                // 현재 화면 종료 및 수정 결과 전달
+                backButton()
+            }
+            //menu
+            inflateMenu(R.menu.menu_show_menu)
+            setOnMenuItemClickListener {
+                when(it.itemId){
+                    // 수정 메뉴 선택 시 EditMemoActivity 실행
+                    R.id.menu_edit ->{
+                        launchEditMemoActivity()
+                        true
                     }
-                    true
+
+                    // 삭제 메뉴 선택 시 현재 메모 삭제
+                    R.id.menu_delete ->{
+                        // memoIndex가 -1이 아니면 (선택한 메모가 있다면) 아래 동작 수행
+                        deleteMemo()
+                        true
+                    }
+                    else -> false
                 }
+
             }
         }
     }
@@ -122,12 +115,40 @@ class ShowMemoActivity : AppCompatActivity() {
     // 메모 데이터를 화면에 표시하는 함수
     fun displayMemoData(){
         activityShowMemoBinding.apply {
-
             // textField에 값 넣어 주기
             showMemoTitle.setText(memoData.title)
-            showMemoDate.setText(memoData.date.toString())
+            showMemoDate.setText(getDateFormatted(memoData.date))
             showMemoContents.setText(memoData.contents)
+        }
+    }
 
+    fun getDateFormatted(date: Long): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        return dateFormat.format(Date(date))
+    }
+
+    fun backButton(){
+        val resultIntent = Intent()
+        resultIntent.putExtra("updatedMemoData", memoData)
+        resultIntent.putExtra("editIndex", memoIndex)
+        setResult(RESULT_OK,resultIntent )
+        finish()
+    }
+
+    fun launchEditMemoActivity(){
+        val intent = Intent(this@ShowMemoActivity, EditMemoActivity::class.java)
+        intent.putExtra("memoData", memoData)
+        intent.putExtra("editIndex",memoIndex)
+        editActivityLauncher.launch(intent)
+    }
+
+    fun deleteMemo(){
+        if(memoIndex != -1){
+            val resultIntent = Intent()
+            // "deleteMemoData" 에 memoIndex 값을 담아서 결과 Intent에 추가
+            resultIntent.putExtra("deleteMemoData", memoIndex)
+            setResult(RESULT_OK, resultIntent)
+            finish()
         }
     }
 

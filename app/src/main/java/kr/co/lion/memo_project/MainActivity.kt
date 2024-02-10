@@ -76,6 +76,9 @@ class MainActivity : AppCompatActivity() {
                     it.data?.getParcelableExtra<MemoData>("updatedMemoData")
                 }
 
+                // 수정할 인덱스
+                val editIndex = it.data?.getIntExtra("editIndex",-1)
+
                 //메모가 삭제된 경우
                 // null과 -1 이 아닐때 동작
                 if (deleteMemoIndex != null && deleteMemoIndex != -1) {
@@ -85,21 +88,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // 메모가 수정된 경우
-                if (updatedMemoData != null) {
-                    //수정된 메모와 날짜가 일치하는 메모의 인덱스 찾기
-                    // indexofFirst 함수 : 주어진 조건을 만족하는 첫번째 요소의 인덱스를 반환
-                    val position = memoList.indexOfFirst { memo -> memo.date == updatedMemoData.date }
-
-                    // 찾은 인덱스가 유효한 경우
-                    // -1 은 찾지 못했다는 의미이므로 유효할 때만 아래 동작
-                    if (position != -1) {
-                        //해당 인덱스의 메모 업데이트
-                        memoList[position] = updatedMemoData
-
-                        // recyclerview 갱신
-                        activityMainBinding.recyclerview.adapter?.notifyItemChanged(position)
-                    }
+                if(updatedMemoData != null && editIndex !=-1){
+                    (activityMainBinding.recyclerview.adapter as? RecyclerViewMainAdapter)?.updateItem(editIndex!!, updatedMemoData)
                 }
+
             }
         }
 
@@ -107,26 +99,23 @@ class MainActivity : AppCompatActivity() {
 
     // 툴바 설정
     fun setToolbar(){
-        activityMainBinding.apply {
-            toolbarMain.apply {
-                // Title
-                title = "메모 관리"
-                //menu
-                inflateMenu(R.menu.menu_main)
-                // 메뉴의 리스너
-                setOnMenuItemClickListener {
-                    when(it.itemId){
-                        // 추가 메뉴
-                        R.id.menu_main_add -> {
-                            // InputActivity를 실행한다.
-                            val inputIntent = Intent(this@MainActivity, InputActivity::class.java)
-                            inputActivityLauncher.launch(inputIntent)
-                        }
+        activityMainBinding.toolbarMain.apply {
+            // Title
+            title = "메모 관리"
+            //menu
+            inflateMenu(R.menu.menu_main)
+            // 메뉴의 리스너
+            setOnMenuItemClickListener {
+                when(it.itemId){
+                    // 추가 메뉴
+                    R.id.menu_main_add -> {
+                        // InputActivity를 실행한다.
+                        val inputIntent = Intent(this@MainActivity, InputActivity::class.java)
+                        inputActivityLauncher.launch(inputIntent)
                     }
-                    true
                 }
+                true
             }
-
         }
     }
 
@@ -152,10 +141,9 @@ class MainActivity : AppCompatActivity() {
         return dateFormat.format(Date(date))
     }
 
-
     inner class RecyclerViewMainAdapter : RecyclerView.Adapter<RecyclerViewMainAdapter.ViewHolderMain>(){
         inner class ViewHolderMain(rowBinding: RowBinding) : RecyclerView.ViewHolder(rowBinding.root){
-            val rowBinding:RowBinding
+            val rowBinding: RowBinding
 
             init {
                 this.rowBinding = rowBinding
@@ -181,6 +169,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+            fun updateItem(position: Int, newItem: MemoData) {
+                memoList[position] = newItem
+                notifyItemChanged(position)
+            }
 
         // 새로운 뷰 객체 생성
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderMain {

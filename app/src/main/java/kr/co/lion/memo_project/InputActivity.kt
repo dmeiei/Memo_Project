@@ -26,25 +26,25 @@ class InputActivity : AppCompatActivity() {
 
     // 툴바 설정
     fun setToolbar(){
-        activityInputBinding.apply {
-            toolbarInput.apply {
-                // 타이틀
-                title = "메모 작성"
-                // Back
-                setNavigationIcon(R.drawable.arrow_back_24px)
-                setNavigationOnClickListener {
-                    setResult(RESULT_CANCELED)
-                    finish()
-                }
-                // 메뉴
-                inflateMenu(R.menu.menu_input)
-                setOnMenuItemClickListener {
-                    when(it.itemId){
-                        R.id.menu_input_done -> {
-                            processInputDone()
-                        }
+        activityInputBinding.toolbarInput.apply {
+            // 타이틀
+            title = "메모 작성"
+            // Back
+            setNavigationIcon(R.drawable.arrow_back_24px)
+            setNavigationOnClickListener {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
+            // 메뉴
+            inflateMenu(R.menu.menu_input)
+            setOnMenuItemClickListener {
+                when(it.itemId) {
+                    R.id.menu_input_done -> {
+                        processInputDone()
+                        true
                     }
-                    true
+
+                    else -> false
                 }
             }
         }
@@ -62,7 +62,7 @@ class InputActivity : AppCompatActivity() {
 
             // 내용 입력칸
             // 엔터키를 누르면 입력 완료 처리를 한다.
-            inputMemoContents.setOnEditorActionListener { v, actionId, event ->
+            inputMemoContents.setOnEditorActionListener { _, _, _ ->
                 processInputDone()
                 true
             }
@@ -71,7 +71,6 @@ class InputActivity : AppCompatActivity() {
 
     // 입력 완료 처리
     fun processInputDone(){
-
         activityInputBinding.apply {
             // 사용자가 입력한 내용을 가져온다
             val title = inputMemoTitle.text.toString()
@@ -91,7 +90,7 @@ class InputActivity : AppCompatActivity() {
             val memoData = MemoData(title, System.currentTimeMillis(), contents)
 
             // 스낵바 출력
-            Snackbar.make(activityInputBinding.root, "등록이 완료되었습니다", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(root, "등록이 완료되었습니다", Snackbar.LENGTH_SHORT).show()
 
             // 이전으로 돌아간다.
             val resultIntent = Intent()
@@ -111,7 +110,7 @@ class InputActivity : AppCompatActivity() {
             setMessage(message)
 
             // 확인 버튼을 눌렀을 때 동작
-            setPositiveButton("확인"){ dialogInterface: DialogInterface, i: Int ->
+            setPositiveButton("확인"){ _, _ ->
                 // 입력이 오류일 경우 해당 입력란 초기화 다시 입력
                 focusView.setText("")
                 focusView.requestFocus()

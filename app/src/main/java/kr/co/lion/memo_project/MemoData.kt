@@ -3,19 +3,18 @@ package kr.co.lion.memo_project
 import android.os.Parcel
 import android.os.Parcelable
 
-class MemoData(var title:String? , var date:Long, var contents : String?) : Parcelable {
-    internal val currentDate: Long
-
-    init {
-        currentDate = System.currentTimeMillis()
-    }
+class MemoData(
+    var title:String?,
+    var date:Long,
+    var contents : String?
+) : Parcelable {
+    val currentDate: Long = System.currentTimeMillis()
 
     constructor(parcel: Parcel) : this(
         parcel.readString(),
         parcel.readLong(),
         parcel.readString()
-    ) {
-    }
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(title)

@@ -17,55 +17,50 @@ class EditMemoActivity : AppCompatActivity() {
     lateinit var activityEditMemoBinding: ActivityEditMemoBinding
     lateinit var memoData: MemoData
 
+    //수정할 정보 인덱스
+    var editIndex : Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activityEditMemoBinding = ActivityEditMemoBinding.inflate(layoutInflater)
         setContentView(activityEditMemoBinding.root)
 
-
         setToolbar()
-        setView()
-//        memoData = intent.getParcelableExtra("memoData")!!
+
         // Intent로부터 메모 정보 객체를 추출한다.
         memoData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("memoData", MemoData::class.java)!!
         } else {
             intent.getParcelableExtra<MemoData>("memoData")!!
         }
+
+        // index추출
+        editIndex = intent.getIntExtra("editIndex", -1)
+
         displayMemoData()
     }
 
     fun setToolbar(){
-        activityEditMemoBinding.apply {
-            toolbarEditMemo.apply {
-                // 타이틀
-                title = "메모 수정"
-                // Back
-                setNavigationIcon(R.drawable.arrow_back_24px)
-                setNavigationOnClickListener {
-                    setResult(RESULT_CANCELED)
-                    finish()
-                }
-                // 메뉴
-                inflateMenu(R.menu.menu_edit)
-                setOnMenuItemClickListener {
-                    when(it.itemId){
-                        R.id.menu_edit_done -> {
-                            processInputDone()
-                        }
+        activityEditMemoBinding.toolbarEditMemo.apply {
+            // 타이틀
+            title = "메모 수정"
+            // Back
+            setNavigationIcon(R.drawable.arrow_back_24px)
+            setNavigationOnClickListener {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
+            // 메뉴
+            inflateMenu(R.menu.menu_edit)
+            setOnMenuItemClickListener {
+                when(it.itemId){
+                    R.id.menu_edit_done -> {
+                        processInputDone()
+                        true
                     }
-                    true
+                    else -> false
                 }
             }
-        }
-    }
-    fun setView(){
-        activityEditMemoBinding.apply {
-
-            editMemoTitle.isEnabled = true
-            toolbarEditMemo.isEnabled = true
-
         }
     }
 
@@ -80,8 +75,6 @@ class EditMemoActivity : AppCompatActivity() {
 
 //     입력 완료 처리
     fun processInputDone(){
-        // Toast.makeText(this@InputActivity, "눌러졌습니다", Toast.LENGTH_SHORT).show()
-
         activityEditMemoBinding.apply {
             // 사용자가 입력한 내용을 가져온다
             val title = editMemoTitle.text.toString()
@@ -97,19 +90,14 @@ class EditMemoActivity : AppCompatActivity() {
                 return
             }
 
-//            memoData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                intent.getParcelableExtra("memoData", MemoData::class.java)!!
-//            } else {
-//                intent.getParcelableExtra<MemoData>("memoData")!!
-//            }
-
             // 기존의 메모 정보에 새로운 내용을 업데이트한다.
             val updatedMemoData = MemoData(title, memoData.date?: 0, contents)
 
-            Snackbar.make(activityEditMemoBinding.root, "수정이 완료되었습니다", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(root, "수정이 완료되었습니다", Snackbar.LENGTH_SHORT).show()
             // 이전으로 돌아간다.
             val resultIntent = Intent()
             resultIntent.putExtra("updatedMemoData", updatedMemoData)
+            resultIntent.putExtra("editIndex", editIndex)
             setResult(RESULT_OK, resultIntent)
             finish()
 
@@ -122,7 +110,7 @@ class EditMemoActivity : AppCompatActivity() {
         val builder = MaterialAlertDialogBuilder(this@EditMemoActivity).apply {
             setTitle(title)
             setMessage(message)
-            setPositiveButton("확인"){ dialogInterface: DialogInterface, i: Int ->
+            setPositiveButton("확인"){ _, _ ->
                 focusView.setText("")
                 focusView.requestFocus()
                 showSoftInput(focusView)
