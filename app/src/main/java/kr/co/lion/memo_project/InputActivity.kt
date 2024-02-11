@@ -59,13 +59,6 @@ class InputActivity : AppCompatActivity() {
             // 키보드를 올린다.
             // 이 때, View를 지정해야한다.
             showSoftInput(inputMemoTitle)
-
-            // 내용 입력칸
-            // 엔터키를 누르면 입력 완료 처리를 한다.
-            inputMemoContents.setOnEditorActionListener { _, _, _ ->
-                processInputDone()
-                true
-            }
         }
     }
 
