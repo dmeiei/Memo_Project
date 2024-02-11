@@ -53,7 +53,11 @@ class ShowMemoActivity : AppCompatActivity() {
             if(it.resultCode == RESULT_OK){
                 if(it.data != null){
                     // EditMemoActivity에서 수정된 메모 데이터 가져오기
-                    val updatedMemoData = it.data?.getParcelableExtra<MemoData>("updatedMemoData")
+                    val updatedMemoData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        it.data?.getParcelableExtra("updatedMemoData", MemoData::class.java)
+                    } else {
+                        it.data?.getParcelableExtra<MemoData>("updatedMemoData")
+                    }
 
                     if (updatedMemoData != null) {
                         // 수정된 데이터로 현재 화면 갱신
